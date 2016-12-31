@@ -1,2 +1,3 @@
 # allo-cpp
-Modern fast composable C++ allocators and wrappers
+A header-only library of fast composable C++ allocators with conveninent wrappers for a variety of containers
+
