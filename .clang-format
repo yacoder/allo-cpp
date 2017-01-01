@@ -1,0 +1,12 @@
+BasedOnStyle:  LLVM
+Language: Cpp
+ReflowComments: true
+UseTab: Never
+IndentWidth: 3
+BreakBeforeBraces: Allman
+AllowShortIfStatementsOnASingleLine: false
+IndentCaseLabels: false
+ColumnLimit: 120
+BreakConstructorInitializersBeforeComma: true
+PointerAlignment: Left
+
