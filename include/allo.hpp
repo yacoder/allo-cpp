@@ -15,5 +15,6 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 // their pre-compiled header, or include some of the sub-headers directly to
 // speed up compilation.
 
+#include "allo_private_allocator.hpp"
 #include "allo_counting_allocator.hpp"
 
