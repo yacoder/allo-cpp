@@ -15,9 +15,10 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 // their pre-compiled header, or include some of the sub-headers directly to
 // speed up compilation.
 
-#include "allocation_strategies/allo_counting_strategy.hpp"
-#include "allocation_strategies/allo_never_look_back_allocation_strategy.hpp"
-
 #include "allo_private_allocator.hpp"
-#include "allo_counting_allocator.hpp"
 
+#include "allocation_strategies/allo_counting_strategy.hpp"
+#include "allocation_strategies/allo_never_look_back_strategy.hpp"
+
+#include "allo_counting_allocator.hpp"
+#include "allo_never_look_back_allocator.hpp"
