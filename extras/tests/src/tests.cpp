@@ -15,6 +15,7 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 
 #include <array>
 #include <vector>
+#include <string>
 
 TEST_CASE("Counting strategy can count", "[counting-strategy]")
 {
@@ -84,7 +85,6 @@ TEST_CASE("Counting allocator works with standard vector", "[counting-allocator]
    REQUIRE(counting_strategy.number_of_deallocations() == 1);
 }
 
-
 TEST_CASE("Never-look-back strategy works with standard vector", "[never-look-back-strategy][never-look-back-allocator][vector]")
 {
     const int N = 2048;
@@ -113,4 +113,15 @@ TEST_CASE("Never-look-back strategy works with standard vector", "[never-look-ba
 
     REQUIRE(counting_strategy.number_of_allocations() == 0);
     REQUIRE(counting_strategy.number_of_deallocations() == 0);
+}
+
+TEST_CASE("Wrapped map works as a map", "[wrapped-map]")
+{
+    //allo::containers::wrapped_map<uint16_t, std::string> wrapped_map(1000);
+    //auto& map = wrapped_map.unwrap();
+
+    //map[42] = "hello, world!";
+
+    //REQUIRE(map.size() == 1);
+    //REQUIRE(map[42] == "hello, world!");
 }

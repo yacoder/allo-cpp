@@ -22,3 +22,9 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 
 #include "allo_counting_allocator.hpp"
 #include "allo_never_look_back_allocator.hpp"
+
+#include "allo_abandonable_trait.hpp"
+#include "allo_abandon.hpp"
+
+#include "containers/allo_wrapped_container.hpp"
+#include "containers/allo_wrapped_map.hpp"
