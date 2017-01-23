@@ -38,7 +38,7 @@ It helps in several scenarios:
  - the types in the container are trivially destructible
 
 # Is it stable?
-It's in a pre-release v0.1-alpha stage, there are a few major gaps at the moment, e.g. custom allocators need to support proper memory alignment requirements. But it seems to work for a few simple cases covered by the tests I wrote so far. 
+It's in a pre-release v0.1-alpha stage, there are a few major gaps at the moment, e.g. custom allocators need to support proper memory alignment requirements. But it seems to work for a few simple cases covered by the tests written so far. 
 
 # Tested with
 Visual Studio 2015 Update 3
@@ -52,3 +52,5 @@ Visual Studio 2015 Update 3
 1. Run script from under extras\benchmarks\scripts to generate VS 2015 solution from CMake
 2. Open solution, build and run project "allo-benchmarks"
 
+# Related work
+This library builds on the approach discussed in the [cup-of-t screencast episode 3](https://youtu.be/4URfka1mBuU), the list of references for that episode is here: https://github.com/yacoder/cup-of-t/blob/master/cup0003-cpp-stateful-allocators/notes.md  
