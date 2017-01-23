@@ -21,15 +21,13 @@ namespace strategies
 class counting_strategy
 {
  public:
-     template <typename T>
-   T* allocate(std::size_t)
+   template <typename T> T* allocate(std::size_t)
    {
       ++*m_number_of_allocations;
       return nullptr;
    }
 
-   template <typename T>
-   bool deallocate(T*, std::size_t)
+   template <typename T> bool deallocate(T*, std::size_t)
    {
       ++*m_number_of_deallocations;
       return false;

@@ -39,6 +39,7 @@ class never_look_back_strategy
          return result;
       }
 
+      m_at_least_one_allocation_failed = true;
       return nullptr;
    }
 
@@ -70,10 +71,16 @@ class never_look_back_strategy
    never_look_back_strategy& operator=(const never_look_back_strategy&) = delete;
    never_look_back_strategy& operator=(never_look_back_strategy&&) = delete;
 
+   bool no_allocation_requests_have_failed()
+   {
+       return !m_at_least_one_allocation_failed;
+   }
+
  private:
    const uint8_t* m_begin_pointer;
    const uint8_t* m_end_pointer;
    std::shared_ptr<uint8_t*> m_current_pointer;
+   bool m_at_least_one_allocation_failed = false;
 };
 
 } // namespace strategies

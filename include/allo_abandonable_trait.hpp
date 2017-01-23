@@ -13,13 +13,15 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 namespace allo
 {
 
-template <typename T> struct is_abandonable : std::false_type
+// If a type is abandonable, allo-containers are allowed to not deallocate it,
+// when they are destructed together with the private memory arena.
+template <typename T> struct is_abandonable : std::conditional<std::is_trivially_destructible<T>::value, std::true_type, std::false_type>
 {
 };
 
-template <typename TKey, typename TValue>
-struct is_abandonable<std::map<TKey, TValue>>
-    : std::conditional<std::is_trivially_destructible<TKey>::value && std::is_trivially_destructible<TValue>::value,
+template <typename TKey, typename TValue, typename TCompare, typename TAlloc>
+struct is_abandonable<std::map<TKey, TValue, TCompare, TAlloc>>
+    : std::conditional<is_abandonable<TKey>::type::value && is_abandonable<TValue>::type::value,
                        std::true_type, std::false_type>
 {
 };

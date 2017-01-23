@@ -54,7 +54,7 @@ class wrapped_container
 
    ~wrapped_container()
    {
-      if (is_abandonable<allocator_t>::value)
+      if (is_abandonable<TContainer<allocator_t>>::type::value && m_strategy.no_allocation_requests_have_failed())
       {
          abandon(m_wrapped);
       }

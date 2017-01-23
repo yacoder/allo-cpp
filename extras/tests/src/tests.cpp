@@ -116,7 +116,7 @@ TEST_CASE("Never-look-back strategy works with standard vector",
 #if !defined(_ITERATOR_DEBUG_LEVEL) || _ITERATOR_DEBUG_LEVEL == 0
       REQUIRE(*reinterpret_cast<uint16_t*>(&buffer[0]) == 42);
 #else
-      // (MSVC) debug vector allocates extra stuff, we won't test it.
+// (MSVC) debug vector allocates extra stuff, we won't test it.
 #endif
 
       REQUIRE(counting_strategy.number_of_allocations() == 0);
@@ -148,15 +148,93 @@ TEST_CASE("Wrapped map must not abandon memory if it had to allocate outside pri
 
       // Create with empty private pool.
       // So in the end we must get as many deallocations as allocations.
-      allo::containers::wrapped_map<uint16_t, std::string, allo::counting_allocator> wrapped_map(0, counting_allocator);
+      allo::containers::wrapped_map<uint16_t, uint16_t, allo::counting_allocator> wrapped_map(0, counting_allocator);
       auto& map = wrapped_map.unwrap();
 
-      map[42] = "hello, world!";
+      static_assert(allo::is_abandonable<std::remove_reference<decltype(map)>::type>::type::value,
+                    "map must be abandonable in this test");
+
+      map[42] = 1984;
 
       REQUIRE(map.size() == 1);
-      REQUIRE(map[42] == "hello, world!");
+      REQUIRE(map[42] == 1984);
    }
 
    REQUIRE(counting_strategy.number_of_allocations() > 0);
    REQUIRE(counting_strategy.number_of_deallocations() == counting_strategy.number_of_allocations());
+}
+
+TEST_CASE("Wrapped map must not abandon memory if one of the types is not trivially destructible",
+          "[wrapped-map][abandon]")
+{
+   uint16_t destructors_called = 0;
+   struct non_trivial
+   {
+      non_trivial(uint16_t& destructors_called)
+          : m_destructors_called(destructors_called)
+      {
+      }
+
+      ~non_trivial() { ++m_destructors_called; }
+
+      uint16_t& m_destructors_called;
+   };
+
+   {
+      allo::containers::wrapped_map<uint16_t, non_trivial> wrapped_map(1024);
+      auto& map = wrapped_map.unwrap();
+
+      static_assert(!allo::is_abandonable<std::remove_reference<decltype(map)>::type>::type::value,
+                    "map must be not abandonable in this test");
+
+      map.emplace(42, destructors_called);
+
+      REQUIRE(destructors_called == 0);
+      REQUIRE(map.size() == 1);
+   }
+
+   REQUIRE(destructors_called == 1);
+}
+
+namespace
+{
+
+struct non_trivial_but_abandonable
+{
+   non_trivial_but_abandonable(uint16_t& destructors_called)
+       : m_destructors_called(destructors_called)
+   {
+   }
+
+   ~non_trivial_but_abandonable() { ++m_destructors_called; }
+
+   uint16_t& m_destructors_called;
+};
+
+} // end of unnamed namespace
+
+template<>
+struct allo::is_abandonable<non_trivial_but_abandonable> : std::true_type
+{
+};
+
+TEST_CASE("Wrapped map must abandon memory if the types are abandonable and all allocations were private",
+          "[wrapped-map][abandon]")
+{
+   uint16_t destructors_called = 0;
+
+   {
+      allo::containers::wrapped_map<uint16_t, non_trivial_but_abandonable> wrapped_map(1024);
+      auto& map = wrapped_map.unwrap();
+
+      static_assert(allo::is_abandonable<std::remove_reference<decltype(map)>::type>::type::value,
+                    "map must be abandonable in this test");
+
+      map.emplace(42, destructors_called);
+
+      REQUIRE(destructors_called == 0);
+      REQUIRE(map.size() == 1);
+   }
+
+   REQUIRE(destructors_called == 0);
 }
