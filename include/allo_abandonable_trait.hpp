@@ -9,6 +9,7 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 */
 
 #pragma once
+#include<map>
 
 namespace allo
 {
