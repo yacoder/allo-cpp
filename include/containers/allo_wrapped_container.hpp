@@ -23,7 +23,9 @@ namespace allo
 namespace containers
 {
 
-template <template <typename TAlloc> typename TContainer, typename TValue> class wrapped_container
+template <template <typename TAlloc> typename TContainer, typename TValue,
+          template <typename T> typename TFallbackAlloc>
+class wrapped_container
 {
  public:
    wrapped_container(size_t private_memory_size)
@@ -34,12 +36,21 @@ template <template <typename TAlloc> typename TContainer, typename TValue> class
    {
    }
 
+   template<typename UFallbackAlloc>
+   wrapped_container(size_t private_memory_size, UFallbackAlloc&& fallback_allocator)
+       : m_memory(private_memory_size)
+       , m_strategy(m_memory.data(), m_memory.data() + m_memory.size())
+       , m_allocator(m_strategy, std::forward<UFallbackAlloc>(fallback_allocator))
+       , m_wrapped(m_allocator)
+   {
+   }
+
    wrapped_container(const wrapped_container&) = delete;
    wrapped_container(wrapped_container&&) = delete;
    wrapped_container& operator=(const wrapped_container&) = delete;
    wrapped_container& operator=(wrapped_container&&) = delete;
 
-   using allocator_t = never_look_back_allocator<TValue, std::allocator<TValue>>;
+   using allocator_t = never_look_back_allocator<TValue, TFallbackAlloc<TValue>>;
 
    ~wrapped_container()
    {
@@ -56,7 +67,7 @@ template <template <typename TAlloc> typename TContainer, typename TValue> class
    std::vector<uint8_t> m_memory;
 
    strategies::never_look_back_strategy m_strategy;
-   
+
    allocator_t m_allocator;
    TContainer<allocator_t> m_wrapped;
 };

@@ -14,56 +14,56 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 #include "allo.hpp"
 
 #include <array>
-#include <vector>
 #include <string>
+#include <vector>
 
 TEST_CASE("Counting strategy can count", "[counting-strategy]")
 {
-    allo::strategies::counting_strategy counting_strategy;
+   allo::strategies::counting_strategy counting_strategy;
 
-    REQUIRE(counting_strategy.number_of_allocations() == 0);
-    REQUIRE(counting_strategy.number_of_deallocations() == 0);
+   REQUIRE(counting_strategy.number_of_allocations() == 0);
+   REQUIRE(counting_strategy.number_of_deallocations() == 0);
 
-    REQUIRE(counting_strategy.allocate<void>(100) == nullptr);
+   REQUIRE(counting_strategy.allocate<void>(100) == nullptr);
 
-    REQUIRE(counting_strategy.number_of_allocations() == 1);
-    REQUIRE(counting_strategy.number_of_deallocations() == 0);
+   REQUIRE(counting_strategy.number_of_allocations() == 1);
+   REQUIRE(counting_strategy.number_of_deallocations() == 0);
 
-    REQUIRE(counting_strategy.deallocate<void>(&counting_strategy, 1) == false);
+   REQUIRE(counting_strategy.deallocate<void>(&counting_strategy, 1) == false);
 
-    REQUIRE(counting_strategy.number_of_allocations() == 1);
-    REQUIRE(counting_strategy.number_of_deallocations() == 1);
+   REQUIRE(counting_strategy.number_of_allocations() == 1);
+   REQUIRE(counting_strategy.number_of_deallocations() == 1);
 }
 
 TEST_CASE("Never-look-back strategy allocates until out of buffer", "[never-look-back-strategy]")
 {
-    std::array<uint8_t, 3> buffer{};
-    auto* buffer_begin = buffer.data();
-    auto* buffer_end = buffer.data() + buffer.size();
-    allo::strategies::never_look_back_strategy never_look_back_strategy(buffer_begin, buffer_end);
+   std::array<uint8_t, 3> buffer{};
+   auto* buffer_begin = buffer.data();
+   auto* buffer_end = buffer.data() + buffer.size();
+   allo::strategies::never_look_back_strategy never_look_back_strategy(buffer_begin, buffer_end);
 
-    auto* first_byte = never_look_back_strategy.allocate<uint8_t>(1);
-    REQUIRE(first_byte == buffer.data());
+   auto* first_byte = never_look_back_strategy.allocate<uint8_t>(1);
+   REQUIRE(first_byte == buffer.data());
 
-    auto* too_large = never_look_back_strategy.allocate<uint8_t>(3);
-    REQUIRE(too_large == nullptr);
+   auto* too_large = never_look_back_strategy.allocate<uint8_t>(3);
+   REQUIRE(too_large == nullptr);
 
-    auto* last_two_bytes = never_look_back_strategy.allocate<uint8_t>(2);
-    REQUIRE(last_two_bytes == buffer.data() + 1);
+   auto* last_two_bytes = never_look_back_strategy.allocate<uint8_t>(2);
+   REQUIRE(last_two_bytes == buffer.data() + 1);
 
-    // should run out of buffer by now
-    REQUIRE(never_look_back_strategy.allocate<uint8_t>(1) == nullptr);
+   // should run out of buffer by now
+   REQUIRE(never_look_back_strategy.allocate<uint8_t>(1) == nullptr);
 
-    // strategy must not recognize other pointers
-    REQUIRE(never_look_back_strategy.deallocate<uint8_t>(nullptr, 1) == false);
-    REQUIRE(never_look_back_strategy.deallocate<uint8_t>(buffer_end, 1) == false);
+   // strategy must not recognize other pointers
+   REQUIRE(never_look_back_strategy.deallocate<uint8_t>(nullptr, 1) == false);
+   REQUIRE(never_look_back_strategy.deallocate<uint8_t>(buffer_end, 1) == false);
 
-    // strategy must recognize the pointers it allocated
-    REQUIRE(never_look_back_strategy.deallocate<uint8_t>(first_byte, 1) == true);
-    REQUIRE(never_look_back_strategy.deallocate<uint8_t>(last_two_bytes, 2) == true);
+   // strategy must recognize the pointers it allocated
+   REQUIRE(never_look_back_strategy.deallocate<uint8_t>(first_byte, 1) == true);
+   REQUIRE(never_look_back_strategy.deallocate<uint8_t>(last_two_bytes, 2) == true);
 
-    // even after we have deallocated everything, we can't allocate again fom it
-    REQUIRE(never_look_back_strategy.allocate<uint8_t>(1) == nullptr);
+   // even after we have deallocated everything, we can't allocate again fom it
+   REQUIRE(never_look_back_strategy.allocate<uint8_t>(1) == nullptr);
 }
 
 TEST_CASE("Counting allocator works with standard vector", "[counting-allocator][counting-strategy][vector]")
@@ -84,42 +84,67 @@ TEST_CASE("Counting allocator works with standard vector", "[counting-allocator]
    REQUIRE(counting_strategy.number_of_deallocations() == 1);
 }
 
-TEST_CASE("Never-look-back strategy works with standard vector", "[never-look-back-strategy][never-look-back-allocator][vector]")
+TEST_CASE("Never-look-back strategy works with standard vector",
+          "[never-look-back-strategy][never-look-back-allocator][vector]")
 {
-    const int N = 2048;
-    std::array<uint8_t, N> buffer{};
-    auto* buffer_begin = buffer.data();
-    auto* buffer_end = buffer.data() + buffer.size();
+   const int N = 2048;
+   std::array<uint8_t, N> buffer{};
+   auto* buffer_begin = buffer.data();
+   auto* buffer_end = buffer.data() + buffer.size();
 
-    allo::strategies::never_look_back_strategy never_look_back_strategy(buffer_begin, buffer_end);
+   allo::strategies::never_look_back_strategy never_look_back_strategy(buffer_begin, buffer_end);
 
+   // We will use counting allocator to make sure no allocations fall through to std allocator.
+   allo::strategies::counting_strategy counting_strategy;
+
+   {
+      allo::counting_allocator<uint16_t> counting_allocator(counting_strategy);
+      allo::never_look_back_allocator<uint16_t, decltype(counting_allocator)> allocator(never_look_back_strategy,
+                                                                                        counting_allocator);
+      std::vector<uint16_t, decltype(allocator)> v(allocator);
+      v.reserve(N / 2);
+      v.push_back(42);
+
+      REQUIRE(v[0] == 42);
+      REQUIRE(*reinterpret_cast<uint16_t*>(&buffer[0]) == 42);
+      REQUIRE(counting_strategy.number_of_allocations() == 0);
+      REQUIRE(counting_strategy.number_of_deallocations() == 0);
+   }
+
+   REQUIRE(counting_strategy.number_of_allocations() == 0);
+   REQUIRE(counting_strategy.number_of_deallocations() == 0);
+}
+
+TEST_CASE("Wrapped map works as a map", "[wrapped-map]")
+{
+   allo::containers::wrapped_map<uint16_t, std::string> wrapped_map(1000);
+   auto& m = wrapped_map.unwrap();
+
+   m[42] = "hello, world!";
+
+   REQUIRE(m.size() == 1);
+   REQUIRE(m[42] == "hello, world!");
+}
+
+TEST_CASE("Wrapped map must not abandon memory if it had to allocate outside private pool", "[wrapped-map][abandon]")
+{
     // We will use counting allocator to make sure no allocations fall through to std allocator.
     allo::strategies::counting_strategy counting_strategy;
 
     {
         allo::counting_allocator<uint16_t> counting_allocator(counting_strategy);
-        allo::never_look_back_allocator<uint16_t, decltype(counting_allocator)> allocator(never_look_back_strategy, counting_allocator);
-        std::vector<uint16_t, decltype(allocator)> v(allocator);
-        v.reserve(N/2);
-        v.push_back(42);
 
-        REQUIRE(v[0] == 42);
-        REQUIRE(*reinterpret_cast<uint16_t*>(&buffer[0]) == 42);
-        REQUIRE(counting_strategy.number_of_allocations() == 0);
-        REQUIRE(counting_strategy.number_of_deallocations() == 0);
+        // Create with empty private pool.
+        // So in the end we must get as many deallocations as allocations.
+        allo::containers::wrapped_map<uint16_t, std::string, allo::counting_allocator> wrapped_map(0, counting_allocator);
+        auto& map = wrapped_map.unwrap();
+
+        map[42] = "hello, world!";
+
+        REQUIRE(map.size() == 1);
+        REQUIRE(map[42] == "hello, world!");
     }
 
-    REQUIRE(counting_strategy.number_of_allocations() == 0);
-    REQUIRE(counting_strategy.number_of_deallocations() == 0);
-}
-
-TEST_CASE("Wrapped map works as a map", "[wrapped-map]")
-{
-    allo::containers::wrapped_map<uint16_t, std::string> wrapped_map(1000);
-    auto& map = wrapped_map.unwrap();
-
-    map[42] = "hello, world!";
-
-    REQUIRE(map.size() == 1);
-    REQUIRE(map[42] == "hello, world!");
+    REQUIRE(counting_strategy.number_of_allocations() > 0);
+    REQUIRE(counting_strategy.number_of_deallocations() == counting_strategy.number_of_allocations());
 }

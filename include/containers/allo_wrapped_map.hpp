@@ -13,6 +13,8 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 #include "allo_wrapped_container.hpp"
 
 #include <map>
+#include <memory>
+#include <utility>
 
 namespace allo
 {
@@ -24,7 +26,9 @@ template <typename TKey, typename TValue> struct allo_map
    template <typename TAlloc> using type = std::map<TKey, TValue, std::less<TKey>, TAlloc>;
 };
 
-template <typename TKey, typename TValue> using wrapped_map = wrapped_container<typename allo_map<TKey, TValue>::type, std::pair<const TKey, TValue>>;
+template <typename TKey, typename TValue, template <typename T> typename TFallbackAlloc = std::allocator>
+using wrapped_map =
+    wrapped_container<typename allo_map<TKey, TValue>::type, std::pair<const TKey, TValue>, TFallbackAlloc>;
 
 } // namespace containers
 } // namespace allo
