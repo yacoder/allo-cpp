@@ -128,23 +128,23 @@ TEST_CASE("Wrapped map works as a map", "[wrapped-map]")
 
 TEST_CASE("Wrapped map must not abandon memory if it had to allocate outside private pool", "[wrapped-map][abandon]")
 {
-    // We will use counting allocator to make sure no allocations fall through to std allocator.
-    allo::strategies::counting_strategy counting_strategy;
+   // We will use counting allocator to make sure no allocations fall through to std allocator.
+   allo::strategies::counting_strategy counting_strategy;
 
-    {
-        allo::counting_allocator<uint16_t> counting_allocator(counting_strategy);
+   {
+      allo::counting_allocator<uint16_t> counting_allocator(counting_strategy);
 
-        // Create with empty private pool.
-        // So in the end we must get as many deallocations as allocations.
-        allo::containers::wrapped_map<uint16_t, std::string, allo::counting_allocator> wrapped_map(0, counting_allocator);
-        auto& map = wrapped_map.unwrap();
+      // Create with empty private pool.
+      // So in the end we must get as many deallocations as allocations.
+      allo::containers::wrapped_map<uint16_t, std::string, allo::counting_allocator> wrapped_map(0, counting_allocator);
+      auto& map = wrapped_map.unwrap();
 
-        map[42] = "hello, world!";
+      map[42] = "hello, world!";
 
-        REQUIRE(map.size() == 1);
-        REQUIRE(map[42] == "hello, world!");
-    }
+      REQUIRE(map.size() == 1);
+      REQUIRE(map[42] == "hello, world!");
+   }
 
-    REQUIRE(counting_strategy.number_of_allocations() > 0);
-    REQUIRE(counting_strategy.number_of_deallocations() == counting_strategy.number_of_allocations());
+   REQUIRE(counting_strategy.number_of_allocations() > 0);
+   REQUIRE(counting_strategy.number_of_deallocations() == counting_strategy.number_of_allocations());
 }
