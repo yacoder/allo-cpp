@@ -1,6 +1,6 @@
 Allo is a header-only library of fast composable C++ allocators with conveninent wrappers for a variety of containers.
 
-Quick sample
+# Quick sample
 
 ```cpp
 {
@@ -10,7 +10,7 @@ Quick sample
     
    // Get the std::map from within the allo::map.
    // Use auto&, because the type of it is NOT simply std::map<int, int>, it has a custom allocator,
-   // but, naturally, it still "quacks like a map": you can call all the standard map methods on the reference.
+   // but, naturally, it "quacks like a map": you can call all the standard map methods on the reference.
    auto& map = allo_map.unwrap();
        
    // ... use the map here ...
@@ -21,6 +21,24 @@ Quick sample
    // destructing each node of the map's tree.
 }
 ```
+# Is it faster?
+
+Yes, the table below shows the result of the *most_frequent_numbers* benchmark on my 2-core i7 laptop, built with VS 2015.3. It runs the same algorithm on multiple threads, the difference is only in the container type used.
+
+Number of threads | `std::map` time, ms | `allo::map` time, ms
+--- | --- | ---
+1|13779|9487
+2|8149|5222
+3|6293|3974
+4|5529|3320
+
+It helps in several scenarios:
+ - you need to use a short-lived container (e.g. find the most frequent number and return just the number)
+ - you run this code in parallel and you need to reduce the contention over standard allocator
+ - the types in the container are trivially destructible
+
+# Is it stable?
+It's in a pre-release v0.1-alpha stage, there are a few major gaps at the moment, e.g. custom allocators need to support proper memory alignment requirements. But it seems to work for a few simple cases covered by the tests I wrote so far. 
 
 # Tested with
 Visual Studio 2015 Update 3
