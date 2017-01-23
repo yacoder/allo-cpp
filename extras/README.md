@@ -1,6 +1,6 @@
 # Extras
 
-All contents under the Extras folder is auxiliary, that is not required for consumers of the Allo colection.
+All contents under the Extras folder is auxiliary, that is not required for consumers of the Allo library.
 
 Further subdivision:
 
