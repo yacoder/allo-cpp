@@ -32,10 +32,9 @@ Number of threads | `std::map` time, ms | `allo::map` time, ms
 3|6293|3974
 4|5529|3320
 
-It helps in several scenarios:
- - you need to use a short-lived container (e.g. find the most frequent number and return just the number)
- - you run this code in parallel and you need to reduce the contention over standard allocator
- - the types in the container are trivially destructible
+Generally speaking, this approach helps in algortihms, which use a short-lived temporary container (e.g. find the most frequent number and return just the number) and in addition to that:
+ - you might run this algorithms in parallel and you want to reduce contention over process heap
+ - the types in the temporary container are trivially destructible and you want to speed-up the destruction
 
 # Is it stable?
 It's in a pre-release v0.1-alpha stage, there are a few major gaps at the moment, e.g. custom allocators need to support proper memory alignment requirements. But it seems to work for a few simple cases covered by the tests written so far. 
