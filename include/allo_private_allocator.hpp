@@ -9,6 +9,7 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 */
 
 #pragma once
+#include <memory>
 
 namespace allo
 {
@@ -21,18 +22,34 @@ template <typename T, typename TAllocationStrategy, typename TInnerAllocator = s
 class private_allocator
 {
  public:
+   // ------------------------------------------------------------------------------------------
    // Allocator trait interface.
 
    using value_type = T;
 
-   template <class U> private_allocator(const private_allocator<U, TAllocationStrategy, TInnerAllocator>& other)
+   // Used by containters, e.g. to remap value_type allocator to node_type allocator.
+   // See also: http://en.cppreference.com/w/cpp/memory/allocator
+   template <typename U> struct rebind
    {
-      // e.g. MSVC calls this constructor to create a wrapper allocator in Debug build
+      using other = private_allocator<U, TAllocationStrategy,
+                                      typename std::allocator_traits<TInnerAllocator>::template rebind_alloc<U>>;
+   };
+
+   // All private allocators are friends!
+   template <typename U, typename UAllocationStrategy, typename UInnerAllocator> friend class private_allocator;
+
+   template <typename U, typename UInnerAllocator>
+   private_allocator(const private_allocator<U, TAllocationStrategy, UInnerAllocator>& other)
+       : m_allocation_strategy(other.m_allocation_strategy)
+       , m_inner_allocator(other.m_inner_allocator)
+   {
+      // MSVC calls this constructor to create a wrapper allocator in Debug build,
+      // also used by containers to remap value_type allocator to node_type allocator.
    }
 
    T* allocate(std::size_t n)
    {
-      T* t = m_allocation_strategy.allocate(n);
+      T* t = m_allocation_strategy.allocate<T>(n);
 
       if (!t)
          t = m_inner_allocator.allocate(n);
@@ -42,27 +59,35 @@ class private_allocator
 
    void deallocate(T* p, std::size_t n)
    {
-      if (!m_allocation_strategy.deallocate(p, n))
+      if (!m_allocation_strategy.deallocate<T>(p, n))
          m_inner_allocator.deallocate(p, n);
    }
 
+   // ------------------------------------------------------------------------------------------
    // Interface beyond Allocator trait.
 
-   private_allocator(TAllocationStrategy& strategy, TInnerAllocator& inner_allocator)
+   private_allocator(TAllocationStrategy& strategy)
        : m_allocation_strategy(strategy)
-       , m_inner_allocator(inner_allocator)
+   {
+   }
+
+   template <typename UInnerAllocator>
+   private_allocator(TAllocationStrategy& strategy, UInnerAllocator&& innerAllocator)
+       : m_allocation_strategy(strategy)
+       , m_inner_allocator(std::forward<UInnerAllocator>(innerAllocator))
    {
    }
 
    private_allocator(const private_allocator& other) = default;
-   private_allocator(private_allocator&&) = delete;
+   private_allocator(private_allocator&&) = default;
+   ~private_allocator() = default;
+
    private_allocator& operator=(const private_allocator&) = delete;
    private_allocator& operator=(private_allocator&&) = delete;
-   ~private_allocator() = default;
 
  private:
    TAllocationStrategy& m_allocation_strategy;
-   TInnerAllocator& m_inner_allocator;
+   TInnerAllocator m_inner_allocator;
 };
 
 } // namespace allo

@@ -16,6 +16,6 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 namespace allo
 {
 
-template<typename T> using counting_allocator = private_allocator<T, strategies::counting_strategy<T>>;
+template<typename T> using counting_allocator = private_allocator<T, strategies::counting_strategy>;
 
 } // namespace allo

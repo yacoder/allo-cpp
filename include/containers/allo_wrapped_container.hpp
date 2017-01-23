@@ -29,10 +29,15 @@ template <template <typename TAlloc> typename TContainer, typename TValue> class
    wrapped_container(size_t private_memory_size)
        : m_memory(private_memory_size)
        , m_strategy(m_memory.data(), m_memory.data() + m_memory.size())
-       , m_allocator(m_strategy, m_std_allocator)
+       , m_allocator(m_strategy)
        , m_wrapped(m_allocator)
    {
    }
+
+   wrapped_container(const wrapped_container&) = delete;
+   wrapped_container(wrapped_container&&) = delete;
+   wrapped_container& operator=(const wrapped_container&) = delete;
+   wrapped_container& operator=(wrapped_container&&) = delete;
 
    using allocator_t = never_look_back_allocator<TValue, std::allocator<TValue>>;
 
@@ -49,10 +54,8 @@ template <template <typename TAlloc> typename TContainer, typename TValue> class
 
  private:
    std::vector<uint8_t> m_memory;
-   std::allocator<TValue> m_std_allocator;
 
-   strategies::never_look_back_strategy<TValue> m_strategy;
-
+   strategies::never_look_back_strategy m_strategy;
    
    allocator_t m_allocator;
    TContainer<allocator_t> m_wrapped;

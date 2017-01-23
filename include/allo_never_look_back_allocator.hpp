@@ -17,6 +17,6 @@ namespace allo
 {
 
 template <typename T, typename TInnerAllocator = std::allocator>
-using never_look_back_allocator = private_allocator<T, strategies::never_look_back_strategy<T>, TInnerAllocator>;
+using never_look_back_allocator = private_allocator<T, strategies::never_look_back_strategy, TInnerAllocator>;
 
 } // namespace allo
