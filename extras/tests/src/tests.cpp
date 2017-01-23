@@ -71,17 +71,23 @@ TEST_CASE("Counting allocator works with standard vector", "[counting-allocator]
    using allocator_t = allo::counting_allocator<int>;
    allo::strategies::counting_strategy counting_strategy;
 
+#if !defined(_ITERATOR_DEBUG_LEVEL) || _ITERATOR_DEBUG_LEVEL == 0
+   const int expect_allocations = 1;
+#else
+   // MS STL allocates some proxy conatiner stuff
+   const int expect_allocations = 2;
+#endif
+
    {
       allocator_t allocator(counting_strategy);
       std::vector<int, allocator_t> v(allocator);
       v.push_back(1);
-
-      REQUIRE(counting_strategy.number_of_allocations() == 1);
+      REQUIRE(counting_strategy.number_of_allocations() == expect_allocations);
       REQUIRE(counting_strategy.number_of_deallocations() == 0);
    }
 
-   REQUIRE(counting_strategy.number_of_allocations() == 1);
-   REQUIRE(counting_strategy.number_of_deallocations() == 1);
+   REQUIRE(counting_strategy.number_of_allocations() == expect_allocations);
+   REQUIRE(counting_strategy.number_of_deallocations() == expect_allocations);
 }
 
 TEST_CASE("Never-look-back strategy works with standard vector",
@@ -102,11 +108,17 @@ TEST_CASE("Never-look-back strategy works with standard vector",
       allo::never_look_back_allocator<uint16_t, decltype(counting_allocator)> allocator(never_look_back_strategy,
                                                                                         counting_allocator);
       std::vector<uint16_t, decltype(allocator)> v(allocator);
-      v.reserve(N / 2);
+      v.reserve(100);
       v.push_back(42);
 
       REQUIRE(v[0] == 42);
+
+#if !defined(_ITERATOR_DEBUG_LEVEL) || _ITERATOR_DEBUG_LEVEL == 0
       REQUIRE(*reinterpret_cast<uint16_t*>(&buffer[0]) == 42);
+#else
+      // (MSVC) debug vector allocates extra stuff, we won't test it.
+#endif
+
       REQUIRE(counting_strategy.number_of_allocations() == 0);
       REQUIRE(counting_strategy.number_of_deallocations() == 0);
    }
