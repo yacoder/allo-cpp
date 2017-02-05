@@ -23,8 +23,8 @@ namespace allo
 namespace containers
 {
 
-template <template <typename TAlloc> typename TContainer, typename TValue,
-          template <typename T> typename TFallbackAlloc>
+template <template <typename TAlloc> class TContainer, typename TValue,
+          template <typename T> class TFallbackAlloc>
 class wrapped_container
 {
  public:
