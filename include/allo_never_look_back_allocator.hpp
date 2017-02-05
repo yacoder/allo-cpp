@@ -16,7 +16,7 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 namespace allo
 {
 
-template <typename T, typename TInnerAllocator = std::allocator>
+template <typename T, typename TInnerAllocator = std::allocator<T>>
 using never_look_back_allocator = private_allocator<T, strategies::never_look_back_strategy, TInnerAllocator>;
 
 } // namespace allo
