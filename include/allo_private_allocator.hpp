@@ -49,7 +49,7 @@ class private_allocator
 
    T* allocate(std::size_t n)
    {
-      T* t = m_allocation_strategy.allocate<T>(n);
+      T* t = m_allocation_strategy.template allocate<T>(n);
 
       if (!t)
          t = m_inner_allocator.allocate(n);
@@ -59,7 +59,7 @@ class private_allocator
 
    void deallocate(T* p, std::size_t n)
    {
-      if (!m_allocation_strategy.deallocate<T>(p, n))
+      if (!m_allocation_strategy.template deallocate<T>(p, n))
          m_inner_allocator.deallocate(p, n);
    }
 
