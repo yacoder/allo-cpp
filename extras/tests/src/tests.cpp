@@ -14,6 +14,7 @@ https://github.com/yacoder/allo-cpp/blob/master/LICENSE
 #include "allo.hpp"
 
 #include <array>
+#include <cstdint>
 #include <string>
 #include <vector>
 

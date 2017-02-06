@@ -13,16 +13,15 @@ matrix:
 addons:
     apt:
         sources:
-            - llvm-toolchain-precise
             - ubuntu-toolchain-r-test
         packages:
-            - clang-3.7
+            - clang
             - g++-5
             - gcc-5
 
 install:
     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi; fi
-    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi; fi
+#    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi; fi
 
 before_script:
     - cd extras
