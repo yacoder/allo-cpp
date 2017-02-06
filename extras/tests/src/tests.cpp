@@ -214,10 +214,14 @@ struct non_trivial_but_abandonable
 
 } // end of unnamed namespace
 
-template<>
-struct allo::is_abandonable<non_trivial_but_abandonable> : std::true_type
+namespace allo
+{
+
+template <> struct is_abandonable<non_trivial_but_abandonable> : std::true_type
 {
 };
+
+} // end of namespace allo
 
 TEST_CASE("Wrapped map must abandon memory if the types are abandonable and all allocations were private",
           "[wrapped-map][abandon]")
