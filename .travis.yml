@@ -1,5 +1,7 @@
 language: cpp
 
+# helpful article: https://genbattle.bitbucket.io/blog/2016/01/17/c++-travis-ci
+
 matrix:
     include:
     - os: osx
@@ -7,21 +9,22 @@ matrix:
       compiler: clang
     - os: linux
       compiler: clang
-    - os: linux
-      compier: gcc
-
-addons:
-    apt:
-        sources:
+      addons:
+        apt:
+          sources:
             - ubuntu-toolchain-r-test
-        packages:
-            - clang
+            - llvm-toolchain-precise-3.7
+          packages:
+            - clang-3.7
+      env: COMPILER=clang++-3.7
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
             - g++-5
-            - gcc-5
-
-install:
-    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi; fi
-#    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi; fi
+      env: COMPILER=g++-5
 
 before_script:
     - cd extras
