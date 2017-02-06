@@ -1,8 +1,13 @@
 language: cpp
 
-compiler:  
-    - gcc
-    - clang
+matrix:
+    include
+    - os: osx
+      osx_image: xcode8.2
+    - os: linux
+      compiler: clang
+    - os: linux
+      compier: gcc
 
 before_script:
     - cd extras
