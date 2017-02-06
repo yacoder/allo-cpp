@@ -28,7 +28,7 @@ template <typename TKey, typename TValue> struct allo_map
 
 template <typename TKey, typename TValue, template <typename T> class TFallbackAlloc = std::allocator>
 using wrapped_map =
-    wrapped_container<typename allo_map<TKey, TValue>::type, std::pair<const TKey, TValue>, TFallbackAlloc>;
+    wrapped_container<allo_map<TKey, TValue>::template type, std::pair<const TKey, TValue>, TFallbackAlloc>;
 
 } // namespace containers
 } // namespace allo
