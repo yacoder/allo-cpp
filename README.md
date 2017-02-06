@@ -1,5 +1,7 @@
 Allo is a header-only library of fast composable C++ allocators with conveninent wrappers for a variety of containers.
 
+[![Build Status](https://travis-ci.org/yacoder/allo-cpp.svg?branch=master)](https://travis-ci.org/yacoder/allo-cpp)
+
 # Quick sample
 
 ```cpp
@@ -39,8 +41,11 @@ Generally speaking, this approach helps in algortihms, which use a short-lived t
 # Is it stable?
 It's in a pre-release v0.1-alpha stage, there are a few major gaps at the moment, e.g. custom allocators need to support proper memory alignment requirements. But it seems to work for a few simple cases covered by the tests written so far. 
 
-# Tested with
-Visual Studio 2015 Update 3
+# Builds with
+- Visual Studio 2015 Update 3
+- GCC 5, Linux
+- Clang 3.7, Linux
+- Apple LLVM version 8.0.0 (clang-800.0.42.1), OS X
 
 # How to run tests
 1. Run script from under extras\tests\scripts to generate VS 2015 solution from CMake
